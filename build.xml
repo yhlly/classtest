@@ -1,0 +1,66 @@
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="testivy" default="compiletest">
+    
+    <target name="resolve" description="--> retrieve dependencies with ivy">
+        <ivy:retrieve />
+    </target>
+	
+	
+	<target name="copyfiles" if="mutation">
+		<copy todir="src"  overwrite="true" >  
+			<fileset dir="${mutation}">  
+				<include name="**/*.java"/>
+			</fileset>
+		</copy>	
+	</target>
+	
+	<target name="init" depends="resolve">
+		<mkdir dir="build/classes"/>
+	<path id="class.path">
+		<fileset dir="lib">
+			<include name="**/*.jar" />
+		</fileset>
+		<pathelement  path="build\classes"  />
+		
+		
+		</path>
+    </target>
+	
+    
+	<target name="compile" depends="init,copyfiles"  >		
+		<javac srcdir="src" destdir="build/classes"  includeantruntime="no">
+			<classpath refid="class.path"/>
+		</javac>
+	</target>
+	
+	<target name="compiletest" depends="compile">		
+		<javac includeantruntime="no" srcdir="testsrc" destdir="build/classes" >
+			<classpath refid="class.path"/>
+		</javac>
+		<!--->Copy back the src with no bugs in</!-->
+		<copy todir="src" overwrite="true" >  
+			<fileset dir="goodsrc">  
+				<include name="**/*.java"/>
+			</fileset>
+		</copy>	
+	
+	</target>
+	
+	<target name="test" depends="compiletest">
+	<junit printsummary="on" haltonfailure="no" fork="true">
+        <classpath>
+          <path refid="class.path"/>
+        </classpath>
+        <formatter type="brief" usefile="false" />
+        <batchtest>
+            <fileset dir="testsrc" includes="**/*Test.java" />
+        </batchtest>
+    </junit>
+	
+	
+	</target>
+	
+		
+	
+		
+    
+</project>
